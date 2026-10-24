@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar | Octarian Company</title>
+    <link rel="stylesheet" href="../bootstrap-5.3.8-dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="auth.css">
+</head>
+<body class="auth-page">
+    <nav class="navbar navbar-expand-lg bg-black border-bottom border-secondary"><div class="container py-2"><a class="navbar-brand text-light fw-bold fs-3" href="../index.html">Octarian Company</a><a href="../index.html" class="btn btn-sm btn-outline-light">Kembali ke toko</a></div></nav>
+    <main class="container"><section class="auth-card shadow-lg p-4 p-md-5">
+        <span class="badge bg-danger mb-3">Member Area</span><h1 class="h2 fw-bold">Buat akun Octarian</h1><p class="text-secondary">Verifikasi email mungkin diperlukan sebelum Anda dapat masuk.</p>
+        <div id="auth-status" class="alert" role="status" aria-live="polite" hidden></div>
+        <form id="register-form" novalidate>
+            <div class="mb-3"><label class="form-label" for="full-name">Nama lengkap</label><input class="form-control" id="full-name" name="fullName" type="text" autocomplete="name" minlength="2" maxlength="100" required></div>
+            <div class="mb-3"><label class="form-label" for="email">Email</label><input class="form-control" id="email" name="email" type="email" autocomplete="email" required></div>
+            <div class="mb-3"><label class="form-label" for="password">Kata sandi</label><input class="form-control" id="password" name="password" type="password" autocomplete="new-password" minlength="8" required><div class="form-text text-secondary">Minimal 8 karakter. Gunakan kata sandi unik.</div></div>
+            <div class="mb-3"><label class="form-label" for="confirm-password">Konfirmasi kata sandi</label><input class="form-control" id="confirm-password" name="confirmPassword" type="password" autocomplete="new-password" minlength="8" required></div>
+            <button class="btn btn-danger w-100" type="submit">Daftar</button>
+        </form><p class="mt-4 mb-0 text-secondary">Sudah punya akun? <a class="link-light" href="login.html">Masuk</a>.</p>
+    </section></main>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script><script src="supabase-config.js"></script><script src="supabase-client.js"></script>
+    <script>
+        (function () {
+            const form = document.getElementById("register-form"), status = document.getElementById("auth-status");
+            function show(message, type) { status.textContent = message; status.className = "alert alert-" + type; status.hidden = false; }
+            form.addEventListener("submit", async function (event) {
+                event.preventDefault();
+                if (!form.checkValidity()) { form.classList.add("was-validated"); return; }
+                if (form.password.value !== form.confirmPassword.value) { show("Konfirmasi kata sandi harus sama.", "danger"); return; }
+                if (!OctarianSupabase.isConfigured()) { show("Supabase belum dikonfigurasi. Isi file auth/supabase-config.js.", "warning"); return; }
+                const button = form.querySelector("button"); button.disabled = true;
+                const result = await OctarianSupabase.client.auth.signUp({
+                    email: form.email.value.trim(), password: form.password.value,
+                    options: { data: { full_name: form.fullName.value.trim() }, emailRedirectTo: window.location.origin + window.location.pathname.replace("register.html", "login.html") }
+                });
+                button.disabled = false;
+                if (result.error) { show("Pendaftaran tidak dapat diproses. Periksa data Anda atau coba lagi.", "danger"); return; }
+                form.reset();
+                show(result.data.session ? "Akun berhasil dibuat. Anda akan dialihkan ke profil." : "Akun dibuat. Periksa email Anda untuk memverifikasi akun sebelum masuk.", "success");
+                if (result.data.session) { window.setTimeout(function () { window.location.replace("profile.html"); }, 700); }
+            });
+        }());
+    </script>
+</body>
+</html>

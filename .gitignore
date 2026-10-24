@@ -1,0 +1,16 @@
+# Local Supabase configuration and environment files
+.env
+.env.*
+!.env.example
+auth/supabase-config.local.js
+
+# Package and tooling output
+node_modules/
+coverage/
+dist/
+
+# Editor and operating-system files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

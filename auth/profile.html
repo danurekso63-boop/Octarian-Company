@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil | Octarian Company</title>
+    <link rel="stylesheet" href="../bootstrap-5.3.8-dist/css/bootstrap.min.css"><link rel="stylesheet" href="../style.css"><link rel="stylesheet" href="auth.css">
+</head>
+<body class="auth-page">
+    <nav class="navbar navbar-expand-lg bg-black border-bottom border-secondary"><div class="container py-2"><a class="navbar-brand text-light fw-bold fs-3" href="../index.html">Octarian Company</a><button id="logout-button" class="btn btn-sm btn-danger" type="button">Keluar</button></div></nav>
+    <main class="container"><section class="auth-card shadow-lg p-4 p-md-5"><span class="badge bg-danger mb-3">Member Area</span><h1 class="h2 fw-bold">Profil Anda</h1><p class="text-secondary">Kelola nama yang tampil pada akun Anda.</p>
+        <div id="auth-status" class="alert" role="status" aria-live="polite" hidden></div>
+        <form id="profile-form" novalidate><div class="mb-3"><label class="form-label" for="profile-email">Email</label><input class="form-control" id="profile-email" type="email" readonly></div><div class="mb-3"><label class="form-label" for="full-name">Nama lengkap</label><input class="form-control" id="full-name" name="fullName" type="text" minlength="2" maxlength="100" required></div><button class="btn btn-danger w-100" type="submit">Simpan profil</button></form>
+    </section></main>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script><script src="supabase-config.js"></script><script src="supabase-client.js"></script>
+    <script>
+        (function () {
+            const form = document.getElementById("profile-form"), status = document.getElementById("auth-status"); let user = null;
+            function show(message, type) { status.textContent = message; status.className = "alert alert-" + type; status.hidden = false; }
+            async function loadProfile() {
+                if (!OctarianSupabase.isConfigured()) { show("Supabase belum dikonfigurasi.", "warning"); return; }
+                const current = await OctarianSupabase.client.auth.getUser(); user = current.data && current.data.user;
+                if (!user) { window.location.replace("login.html"); return; }
+                document.getElementById("profile-email").value = user.email || "";
+                const profile = await OctarianSupabase.client.from("profiles").select("full_name").eq("id", user.id).maybeSingle();
+                if (profile.error) { show("Profil tidak dapat dimuat. Pastikan SQL migration sudah dijalankan.", "warning"); return; }
+                document.getElementById("full-name").value = (profile.data && profile.data.full_name) || (user.user_metadata && user.user_metadata.full_name) || "";
+            }
+            form.addEventListener("submit", async function (event) {
+                event.preventDefault(); if (!form.checkValidity() || !user) { form.classList.add("was-validated"); return; }
+                const result = await OctarianSupabase.client.from("profiles").update({ full_name: form.fullName.value.trim() }).eq("id", user.id);
+                if (result.error) { show("Profil tidak dapat diperbarui. Coba lagi nanti.", "danger"); return; }
+                show("Profil berhasil diperbarui.", "success");
+            });
+            document.getElementById("logout-button").addEventListener("click", async function () { if (OctarianSupabase.isConfigured()) await OctarianSupabase.client.auth.signOut(); window.location.replace("../index.html"); });
+            loadProfile();
+        }());
+    </script>
+</body>
+</html>
