@@ -29,7 +29,7 @@
             return;
         }
         target.append(
-            makeLink("Masuk", base + "auth/login.html", "btn btn-sm btn-outline-light"),
+            makeLink("Masuk", base + "auth/login.html", "btn btn-sm btn-primary"),
             makeLink("Daftar", base + "auth/register.html", "btn btn-sm btn-danger")
         );
     }
